@@ -1,9 +1,18 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import path from 'path';
 const app = express();
 
 app.use(express.json()); //modify in coming request cause it undefined without this
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`Hello from middleware`);
+  next();
+});
+
+app.use((req: any, res: Response, next: NextFunction) => {
+  req.requestTime = new Date().toISOString();
+  next();
+});
 
 const filePath = path.join(
   __dirname,
@@ -15,6 +24,7 @@ const filePath = path.join(
 const tours = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
 const getAllTours = (req: Request, res: Response) => {
+  console.log(req);
   res.status(200).json({
     status: 'success',
     dats: {
