@@ -1,7 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import path from 'path';
+import morgan from 'morgan';
 const app = express();
+
+//1_middlewares
+app.use(morgan('dev')); //logger
 
 app.use(express.json()); //modify in coming request cause it undefined without this
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -23,6 +27,7 @@ const filePath = path.join(
 );
 const tours = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
+//2_handlers
 const getAllTours = (req: Request, res: Response) => {
   console.log(req);
   res.status(200).json({
@@ -53,6 +58,7 @@ const getTour = (req: Request, res: Response) => {
       status: 'fail',
       message: 'Invalid Id',
     });
+    return;
   }
   res.status(200).json({
     status: 'success',
@@ -68,6 +74,7 @@ const updateTour = (req: Request, res: Response) => {
       status: 'fail',
       message: 'Invalid Id',
     });
+    return;
   }
   res.status(200).json({
     status: 'success',
@@ -82,6 +89,7 @@ const deleteTour = (req: Request, res: Response) => {
       status: 'fail',
       message: 'Invalid Id',
     });
+    return;
   }
   res.status(204).json({
     status: 'success',
@@ -89,6 +97,7 @@ const deleteTour = (req: Request, res: Response) => {
   });
 };
 
+//3_routes
 // app.get('/api/v1/tours', getAllTours);
 // app.post('/api/v1/tours', createTour);
 // app.get('/api/v1/tours/:id', getTour);
@@ -102,6 +111,7 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 
+//4_start server
 const port = 3001;
 app.listen(port, () => {
   console.log(`listen to port ${port}`);
