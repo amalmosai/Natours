@@ -12,6 +12,32 @@ const filePath = path.join(
 );
 const tours = JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
+export const checkId = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`Tour id id :${req.params.id}`);
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid Id',
+    });
+  }
+  next();
+};
+
+export const checkBody = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.body.name || !req.body.price) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price',
+    });
+    return;
+  }
+  next();
+};
+
 export const getAllTours = (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
@@ -38,13 +64,7 @@ export const createTour = (req: Request, res: Response) => {
 export const getTour = (req: Request, res: Response) => {
   const id = Number(req.params.id);
   const tour = tours.find((ele: any) => ele.id === id);
-  if (!tour) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid Id',
-    });
-    return;
-  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -54,13 +74,6 @@ export const getTour = (req: Request, res: Response) => {
 };
 
 export const updateTour = (req: Request, res: Response) => {
-  if (Number(req.params.id) > tours.length) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid Id',
-    });
-    return;
-  }
   res.status(200).json({
     status: 'success',
     data: {
@@ -70,13 +83,6 @@ export const updateTour = (req: Request, res: Response) => {
 };
 
 export const deleteTour = (req: Request, res: Response) => {
-  if (Number(req.params.id) > tours.length) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid Id',
-    });
-    return;
-  }
   res.status(204).json({
     status: 'success',
     data: null,

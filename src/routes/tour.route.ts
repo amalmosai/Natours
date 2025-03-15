@@ -1,11 +1,14 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import * as tourController from '../controllers/tour.controller';
+
 const router = express.Router();
 
+// this middleware local for this route
+router.param(':id', tourController.checkId);
 router
   .route('/')
   .get(tourController.getAllTours)
-  .post(tourController.createTour);
+  .post(tourController.checkBody, tourController.createTour);
 router
   .route('/:id')
   .get(tourController.getTour)

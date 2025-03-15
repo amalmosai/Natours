@@ -5,7 +5,7 @@ import userRouter from './routes/user.route';
 
 const app = express();
 
-//1_middlewares
+//1_global middlewares
 app.use(morgan('dev')); //logger
 
 app.use(express.json()); //modify in coming request cause it undefined without this
