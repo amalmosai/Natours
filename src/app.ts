@@ -3,11 +3,12 @@ import morgan from 'morgan';
 import tourRouter from './routes/tour.route';
 import userRouter from './routes/user.route';
 import path from 'path';
-
 const app = express();
 
 //1_global middlewares
-app.use(morgan('dev')); //logger
+if (process.env.NODE_ENV === 'devlopment') {
+  app.use(morgan('dev')); //logger
+}
 
 app.use(express.json()); //modify in coming request cause it undefined without this
 app.use(express.static(path.join(__dirname, '../public')));
