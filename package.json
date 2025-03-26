@@ -11,9 +11,11 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "@prisma/extension-accelerate": "^1.2.2",
     "@types/morgan": "^1.9.9",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "joi": "^17.13.3",
     "morgan": "^1.10.0"
   },
   "devDependencies": {

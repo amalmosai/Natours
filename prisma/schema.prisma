@@ -14,8 +14,20 @@ datasource db {
 }
 
 model Tour {
-  id        Int      @id @default(autoincrement())
-  name      String
-  price     Float
-  
+  id                    String        @id @default(uuid())
+  name                  String        @unique
+  durations             Int
+  maxGroupSize          Int
+  difficulty            String
+  ratingsAverage        Float         @default(4.5)
+  ratingsQuantity       Float         @default(0)
+  price                 Float
+  priceDiscount         Float?
+  summery               String
+  description           String?
+  imageCover            String
+  images                String[]
+  createdAt             DateTime      @default(now())
+  startDates            DateTime[]
+  secretTour            Boolean       @default(false)
 }

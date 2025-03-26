@@ -4,11 +4,12 @@ import * as tourController from '../controllers/tour.controller';
 const router = express.Router();
 
 // this middleware local for this route
-router.param('id', tourController.checkId);
+// router.param('id', tourController.checkId);
+
 router
   .route('/')
   .get(tourController.getAllTours)
-  .post(tourController.checkBody, tourController.createTour);
+  .post(tourController.createTour);
 router
   .route('/:id')
   .get(tourController.getTour)
