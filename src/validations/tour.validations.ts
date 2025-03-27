@@ -58,6 +58,10 @@ const imageCoverValidation = Joi.string()
   .required()
   .messages(validationMessages.any);
 
+const imagesValidation = Joi.array()
+  .required()
+  .messages(validationMessages.any);
+
 const startDatesValidation = Joi.array()
   .items(Joi.date())
   .required()
@@ -68,12 +72,13 @@ const secretTourValidation = Joi.boolean().optional().default(false);
 // Create Tour Schema
 const createTourSchema = Joi.object({
   name: nameValidation,
-  duration: durationValidation,
+  durations: durationValidation,
   maxGroupSize: maxGroupSizeValidation,
   difficulty: difficultyValidation,
   price: priceValidation,
   priceDiscount: priceDiscountValidation,
-  summary: summaryValidation,
+  summery: summaryValidation,
+  images: imagesValidation,
   imageCover: imageCoverValidation,
   startDates: startDatesValidation,
   secretTour: secretTourValidation,
@@ -88,6 +93,7 @@ const updateTourSchema = Joi.object({
   price: priceValidation.optional(),
   priceDiscount: priceDiscountValidation.optional(),
   summary: summaryValidation.optional(),
+  images: imagesValidation.optional(),
   imageCover: imageCoverValidation.optional(),
   startDates: startDatesValidation.optional(),
   secretTour: secretTourValidation.optional(),
