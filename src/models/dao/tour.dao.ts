@@ -56,7 +56,27 @@ export class TourService {
     const whereClause: any = { where: { AND: [] } };
 
     if (queryParams.duration) {
-      whereClause.where.AND.push({ duration: parseInt(queryParams.duration) });
+      const durationCondition: any = {};
+
+      if (queryParams.duration.gt) {
+        durationCondition.gt = parseInt(queryParams.duration.gt);
+      }
+      if (queryParams.duration.gte) {
+        durationCondition.gte = parseInt(queryParams.duration.gte);
+      }
+      if (queryParams.duration.lt) {
+        durationCondition.lt = parseInt(queryParams.duration.lt);
+      }
+      if (queryParams.duration.lte) {
+        durationCondition.lte = parseInt(queryParams.duration.lte);
+      }
+      if (queryParams.duration.equals) {
+        durationCondition.equals = parseInt(queryParams.duration.equals);
+      }
+      // Only add duration condition if at least one operator was provided
+      if (Object.keys(durationCondition).length > 0) {
+        whereClause.where.AND.push({ duration: durationCondition });
+      }
     }
     if (queryParams.difficulty) {
       whereClause.where.AND.push({ difficulty: queryParams.difficulty });

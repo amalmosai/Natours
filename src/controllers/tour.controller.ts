@@ -99,10 +99,11 @@ export class TourController {
    */
   public async getAllTours(req: Request, res: Response) {
     try {
+      console.log(req.query);
+
       const queryObj = { ...req.query };
       const excludedFields = ['page', 'sort', 'limit', 'fields'];
       excludedFields.forEach((el) => delete queryObj[el]);
-      console.log(queryObj);
       const tours = await this.tourService.getAllTours(queryObj);
       res.status(200).json(tours);
     } catch (err: any) {
