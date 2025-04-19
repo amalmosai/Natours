@@ -16,14 +16,14 @@ datasource db {
 model Tour {
   id                    String        @id @default(uuid())
   name                  String        @unique
-  durations             Int
+  duration              Int
   maxGroupSize          Int
   difficulty            String
   ratingsAverage        Float         @default(4.5)
   ratingsQuantity       Float         @default(0)
   price                 Float
   priceDiscount         Float?
-  summery               String
+  summary               String
   description           String?
   imageCover            String
   images                String[]

@@ -52,8 +52,21 @@ export class TourService {
    * Retrieves all tours from the database.
    * @returns {Promise<ITour[]>} An array of all tours.
    */
-  public async getAllTours(): Promise<ITour[]> {
-    const tours = await prisma.tour.findMany();
+  public async getAllTours(queryParams: any): Promise<ITour[]> {
+    const whereClause: any = { where: { AND: [] } };
+
+    if (queryParams.duration) {
+      whereClause.where.AND.push({ duration: parseInt(queryParams.duration) });
+    }
+    if (queryParams.difficulty) {
+      whereClause.where.AND.push({ difficulty: queryParams.difficulty });
+    }
+
+    if (whereClause.where.AND.length === 0) {
+      delete whereClause.where;
+    }
+
+    const tours = await prisma.tour.findMany(whereClause);
     return tours;
   }
 

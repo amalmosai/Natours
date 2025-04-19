@@ -48,6 +48,9 @@ const priceDiscountValidation = Joi.number()
   .messages({
     'number.less': 'Discount price must be less than regular price',
   });
+const descriptionValidation = Joi.string()
+  .optional()
+  .messages(validationMessages.string);
 
 const summaryValidation = Joi.string()
   .min(10)
@@ -67,21 +70,34 @@ const startDatesValidation = Joi.array()
   .required()
   .messages(validationMessages.any);
 
+const ratingsAverageValidation = Joi.number()
+  .required()
+  .default(4.5)
+  .messages(validationMessages.number);
+
+const ratingsQuantityValidation = Joi.number()
+  .required()
+  .default(0)
+  .messages(validationMessages.number);
+
 const secretTourValidation = Joi.boolean().optional().default(false);
 
 // Create Tour Schema
 const createTourSchema = Joi.object({
   name: nameValidation,
-  durations: durationValidation,
+  duration: durationValidation,
   maxGroupSize: maxGroupSizeValidation,
   difficulty: difficultyValidation,
   price: priceValidation,
   priceDiscount: priceDiscountValidation,
-  summery: summaryValidation,
+  summary: summaryValidation,
   images: imagesValidation,
   imageCover: imageCoverValidation,
   startDates: startDatesValidation,
   secretTour: secretTourValidation,
+  ratingsAverage: ratingsAverageValidation,
+  ratingsQuantity: ratingsQuantityValidation,
+  description: descriptionValidation,
 });
 
 // Update Tour Schema
@@ -97,6 +113,9 @@ const updateTourSchema = Joi.object({
   imageCover: imageCoverValidation.optional(),
   startDates: startDatesValidation.optional(),
   secretTour: secretTourValidation.optional(),
+  ratingsAverage: ratingsAverageValidation.optional(),
+  ratingsQuantity: ratingsQuantityValidation.optional(),
+  description: descriptionValidation.optional(),
 }).min(1);
 
 export { createTourSchema, updateTourSchema };
