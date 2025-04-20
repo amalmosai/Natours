@@ -102,7 +102,7 @@ export class TourController {
       console.log(req.query);
 
       const queryObj = { ...req.query };
-      const excludedFields = ['page', 'sort', 'limit', 'fields'];
+      const excludedFields = ['page', 'limit', 'fields'];
       excludedFields.forEach((el) => delete queryObj[el]);
       const tours = await this.tourService.getAllTours(queryObj);
       res.status(200).json(tours);

@@ -53,7 +53,20 @@ export class TourService {
    * @returns {Promise<ITour[]>} An array of all tours.
    */
   public async getAllTours(queryParams: any): Promise<ITour[]> {
-    const whereClause: any = { where: { AND: [] } };
+    const queryOptions: any = { where: { AND: [] } };
+    if (queryParams.sort) {
+      const sortParams = queryParams.sort.split(','); //price:desc,ratingAverage:asc
+      queryOptions.orderBy = sortParams.map(
+        (param: { split: (arg0: string) => [any, any] }) => {
+          const [fieldName, order] = param.split(':');
+          return {
+            [fieldName]: order === 'desc' ? 'desc' : 'asc',
+          };
+        },
+      );
+    } else {
+      queryOptions.orderBy = { createdAt: 'desc' };
+    }
 
     if (queryParams.duration) {
       const durationCondition: any = {};
@@ -75,18 +88,18 @@ export class TourService {
       }
       // Only add duration condition if at least one operator was provided
       if (Object.keys(durationCondition).length > 0) {
-        whereClause.where.AND.push({ duration: durationCondition });
+        queryOptions.where.AND.push({ duration: durationCondition });
       }
     }
     if (queryParams.difficulty) {
-      whereClause.where.AND.push({ difficulty: queryParams.difficulty });
+      queryOptions.where.AND.push({ difficulty: queryParams.difficulty });
     }
 
-    if (whereClause.where.AND.length === 0) {
-      delete whereClause.where;
+    if (queryOptions.where.AND.length === 0) {
+      delete queryOptions.where;
     }
 
-    const tours = await prisma.tour.findMany(whereClause);
+    const tours = await prisma.tour.findMany(queryOptions);
     return tours;
   }
 
