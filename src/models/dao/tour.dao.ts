@@ -54,6 +54,7 @@ export class TourService {
    */
   public async getAllTours(queryParams: any): Promise<ITour[]> {
     const queryOptions: any = { where: { AND: [] } };
+    //sort
     if (queryParams.sort) {
       const sortParams = queryParams.sort.split(','); //price:desc,ratingAverage:asc
       queryOptions.orderBy = sortParams.map(
@@ -67,7 +68,7 @@ export class TourService {
     } else {
       queryOptions.orderBy = { createdAt: 'desc' };
     }
-
+    //filtering
     if (queryParams.duration) {
       const durationCondition: any = {};
 
@@ -98,7 +99,26 @@ export class TourService {
     if (queryOptions.where.AND.length === 0) {
       delete queryOptions.where;
     }
+    //limit
+    if (queryParams.limit) {
+      queryOptions.take = parseInt(queryParams.limit);
+    }
 
+    //selected fields
+    if (queryParams.fields) {
+      const fieldsParams = queryParams.fields.split(',');
+      // queryOptions.select = {};
+      queryOptions.omit = {};
+      fieldsParams.forEach((param: any) => {
+        if (param.startsWith('-')) {
+          const fieldToExclude = param.slice(1);
+          queryOptions.omit[fieldToExclude] = true;
+        } else {
+          // queryOptions.select[param] = true;
+        }
+      });
+    }
+    //execution
     const tours = await prisma.tour.findMany(queryOptions);
     return tours;
   }
