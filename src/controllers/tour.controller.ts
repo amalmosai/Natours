@@ -100,16 +100,11 @@ export class TourController {
   public async getAllTours(req: Request, res: Response) {
     try {
       console.log(req.query);
-
       const queryObj = { ...req.query };
-      const excludedFields = ['page'];
-      excludedFields.forEach((el) => delete queryObj[el]);
       const tours = await this.tourService.getAllTours(queryObj);
       res.status(200).json(tours);
     } catch (err: any) {
-      res
-        .status(500)
-        .json({ message: 'Error retrieving tours', error: err.message });
+      res.status(404).json({ message: err.message, status: 'fail' });
     }
   }
 

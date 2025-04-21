@@ -54,21 +54,7 @@ export class TourService {
    */
   public async getAllTours(queryParams: any): Promise<ITour[]> {
     const queryOptions: any = { where: { AND: [] } };
-    //sort
-    if (queryParams.sort) {
-      const sortParams = queryParams.sort.split(','); //price:desc,ratingAverage:asc
-      queryOptions.orderBy = sortParams.map(
-        (param: { split: (arg0: string) => [any, any] }) => {
-          const [fieldName, order] = param.split(':');
-          return {
-            [fieldName]: order === 'desc' ? 'desc' : 'asc',
-          };
-        },
-      );
-    } else {
-      queryOptions.orderBy = { createdAt: 'desc' };
-    }
-    //filtering
+    //1)filtering
     if (queryParams.duration) {
       const durationCondition: any = {};
 
@@ -99,15 +85,28 @@ export class TourService {
     if (queryOptions.where.AND.length === 0) {
       delete queryOptions.where;
     }
-    //limit
-    if (queryParams.limit) {
-      queryOptions.take = parseInt(queryParams.limit);
-    }
 
-    //selected fields
+    //2)sort
+    if (queryParams.sort) {
+      const sortParams = queryParams.sort.split(','); //price:desc,ratingAverage:asc
+      queryOptions.orderBy = sortParams.map(
+        (param: { split: (arg0: string) => [any, any] }) => {
+          const [fieldName, order] = param.split(':');
+          return {
+            [fieldName]: order === 'desc' ? 'desc' : 'asc',
+          };
+        },
+      );
+    } else {
+      queryOptions.orderBy = { createdAt: 'desc' };
+    }
+    //3)field limiting
+    // if (queryParams.limit) {
+    //   queryOptions.take = parseInt(queryParams.limit);
+    // }
     if (queryParams.fields) {
       const fieldsParams = queryParams.fields.split(',');
-      // queryOptions.select = {};
+      // queryOptions.select = {}; //conflict with omit in prisma
       queryOptions.omit = {};
       fieldsParams.forEach((param: any) => {
         if (param.startsWith('-')) {
@@ -118,6 +117,23 @@ export class TourService {
         }
       });
     }
+
+    //4)pagination
+    //page=2&limit=10
+    if (queryParams.page) {
+      console.log(queryParams.page);
+      const page = queryParams.page * 1 || 1;
+      const limit = queryParams.limit * 1 || 100;
+      const skip = (page - 1) * limit;
+      queryOptions.take = limit;
+      queryOptions.skip = skip;
+
+      const numTours = await prisma.tour.count();
+      if (skip >= numTours) {
+        throw new Error('this page does not exist');
+      }
+    }
+
     //execution
     const tours = await prisma.tour.findMany(queryOptions);
     return tours;
