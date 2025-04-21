@@ -10,6 +10,12 @@ const tourController = new TourController(tourService);
 // router.param('id', tourController.checkId);
 
 router
+  .route('/top-5-cheap')
+  .get(
+    tourController.aliasTopTours.bind(tourController),
+    tourController.getAllTours.bind(tourController),
+  );
+router
   .route('/')
   .get(tourController.getAllTours.bind(tourController))
   .post(tourController.createTour.bind(tourController));

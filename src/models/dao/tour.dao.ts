@@ -106,32 +106,29 @@ export class TourService {
     // }
     if (queryParams.fields) {
       const fieldsParams = queryParams.fields.split(',');
-      // queryOptions.select = {}; //conflict with omit in prisma
-      queryOptions.omit = {};
+      queryOptions.select = {}; //conflict with omit in prisma
+      // queryOptions.omit = {};
       fieldsParams.forEach((param: any) => {
         if (param.startsWith('-')) {
           const fieldToExclude = param.slice(1);
-          queryOptions.omit[fieldToExclude] = true;
+          // queryOptions.omit[fieldToExclude] = true;
         } else {
-          // queryOptions.select[param] = true;
+          queryOptions.select[param] = true;
         }
       });
     }
 
     //4)pagination
     //page=2&limit=10
-    if (queryParams.page) {
-      console.log(queryParams.page);
-      const page = queryParams.page * 1 || 1;
-      const limit = queryParams.limit * 1 || 100;
-      const skip = (page - 1) * limit;
-      queryOptions.take = limit;
-      queryOptions.skip = skip;
+    const page = queryParams.page * 1 || 1;
+    const limit = queryParams.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+    queryOptions.take = limit;
+    queryOptions.skip = skip;
 
-      const numTours = await prisma.tour.count();
-      if (skip >= numTours) {
-        throw new Error('this page does not exist');
-      }
+    const numTours = await prisma.tour.count();
+    if (skip >= numTours) {
+      throw new Error('this page does not exist');
     }
 
     //execution

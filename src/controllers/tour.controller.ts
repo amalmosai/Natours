@@ -125,4 +125,11 @@ export class TourController {
         .json({ message: 'Error deleting tour', error: err.message });
     }
   }
+
+  public async aliasTopTours(req: Request, res: Response, next: NextFunction) {
+    req.query.limit = '5';
+    req.query.sort = 'ratingsAverage:desc,price:asc';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    next();
+  }
 }
