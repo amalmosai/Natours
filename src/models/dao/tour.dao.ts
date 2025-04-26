@@ -1,8 +1,10 @@
 import prisma from '../../config/prisma-client';
 import { ITour } from '../../interfaces/tour.interface';
+import { TourQueryBuilder } from '../../utils/apiFeatures';
 import { CreateTourDto, UpdateTourDto } from '../dto/tour.dto';
 
 export class TourService {
+  //Repository Pattern
   /**
    * Creates a new tour in the database.
    * @param {CreateTourDto} createTourDto - The data for the new tour.
@@ -53,83 +55,12 @@ export class TourService {
    * @returns {Promise<ITour[]>} An array of all tours.
    */
   public async getAllTours(queryParams: any): Promise<ITour[]> {
-    const queryOptions: any = { where: { AND: [] } };
-    //1)filtering
-    if (queryParams.duration) {
-      const durationCondition: any = {};
-
-      if (queryParams.duration.gt) {
-        durationCondition.gt = parseInt(queryParams.duration.gt);
-      }
-      if (queryParams.duration.gte) {
-        durationCondition.gte = parseInt(queryParams.duration.gte);
-      }
-      if (queryParams.duration.lt) {
-        durationCondition.lt = parseInt(queryParams.duration.lt);
-      }
-      if (queryParams.duration.lte) {
-        durationCondition.lte = parseInt(queryParams.duration.lte);
-      }
-      if (queryParams.duration.equals) {
-        durationCondition.equals = parseInt(queryParams.duration.equals);
-      }
-      // Only add duration condition if at least one operator was provided
-      if (Object.keys(durationCondition).length > 0) {
-        queryOptions.where.AND.push({ duration: durationCondition });
-      }
-    }
-    if (queryParams.difficulty) {
-      queryOptions.where.AND.push({ difficulty: queryParams.difficulty });
-    }
-
-    if (queryOptions.where.AND.length === 0) {
-      delete queryOptions.where;
-    }
-
-    //2)sort
-    if (queryParams.sort) {
-      const sortParams = queryParams.sort.split(','); //price:desc,ratingAverage:asc
-      queryOptions.orderBy = sortParams.map(
-        (param: { split: (arg0: string) => [any, any] }) => {
-          const [fieldName, order] = param.split(':');
-          return {
-            [fieldName]: order === 'desc' ? 'desc' : 'asc',
-          };
-        },
-      );
-    } else {
-      queryOptions.orderBy = { createdAt: 'desc' };
-    }
-    //3)field limiting
-    // if (queryParams.limit) {
-    //   queryOptions.take = parseInt(queryParams.limit);
-    // }
-    if (queryParams.fields) {
-      const fieldsParams = queryParams.fields.split(',');
-      queryOptions.select = {}; //conflict with omit in prisma
-      // queryOptions.omit = {};
-      fieldsParams.forEach((param: any) => {
-        if (param.startsWith('-')) {
-          const fieldToExclude = param.slice(1);
-          // queryOptions.omit[fieldToExclude] = true;
-        } else {
-          queryOptions.select[param] = true;
-        }
-      });
-    }
-
-    //4)pagination
-    //page=2&limit=10
-    const page = queryParams.page * 1 || 1;
-    const limit = queryParams.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-    queryOptions.take = limit;
-    queryOptions.skip = skip;
-
-    const numTours = await prisma.tour.count();
-    if (skip >= numTours) {
-      throw new Error('this page does not exist');
-    }
+    const queryOptions = new TourQueryBuilder(queryParams)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate()
+      .build();
 
     //execution
     const tours = await prisma.tour.findMany(queryOptions);

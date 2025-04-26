@@ -99,9 +99,7 @@ export class TourController {
    */
   public async getAllTours(req: Request, res: Response) {
     try {
-      console.log(req.query);
-      const queryObj = { ...req.query };
-      const tours = await this.tourService.getAllTours(queryObj);
+      const tours = await this.tourService.getAllTours(req.query);
       res.status(200).json(tours);
     } catch (err: any) {
       res.status(404).json({ message: err.message, status: 'fail' });
