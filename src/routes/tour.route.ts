@@ -15,6 +15,11 @@ router
     tourController.aliasTopTours.bind(tourController),
     tourController.getAllTours.bind(tourController),
   );
+
+router
+  .route('/tour-stats')
+  .get(tourController.getTourStats.bind(tourController));
+
 router
   .route('/')
   .get(tourController.getAllTours.bind(tourController))

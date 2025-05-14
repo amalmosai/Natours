@@ -130,4 +130,21 @@ export class TourController {
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
     next();
   }
+
+  public async getTourStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tours = await this.tourService.getTourStats();
+      res.status(200).json({
+        status: 'success',
+        data: {
+          tours,
+        },
+      });
+    } catch (err) {
+      res.status(404).json({
+        status: 'fail',
+        message: err,
+      });
+    }
+  }
 }

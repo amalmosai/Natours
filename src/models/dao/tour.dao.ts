@@ -79,4 +79,34 @@ export class TourService {
     });
     return tour;
   }
+
+  public async getTourStats(): Promise<any> {
+    const tourStats = await prisma.tour.groupBy({
+      by: ['difficulty'],
+      where: {
+        ratingsAverage: {
+          gte: 4.5,
+        },
+      },
+      _count: { id: true },
+      _sum: { ratingsQuantity: true },
+      _avg: {
+        ratingsAverage: true,
+        price: true,
+      },
+      _min: { price: true },
+      _max: { price: true },
+    });
+
+    const formattedStats = tourStats.map((stat) => ({
+      difficulty: stat.difficulty.toUpperCase(),
+      numTours: stat._count.id,
+      numRatings: stat._sum.ratingsQuantity,
+      avgRating: stat._avg.ratingsAverage,
+      avgPrice: stat._avg.price,
+      minPrice: stat._min.price,
+      maxPrice: stat._max.price,
+    }));
+    return formattedStats;
+  }
 }
