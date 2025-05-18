@@ -133,11 +133,29 @@ export class TourController {
 
   public async getTourStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const tours = await this.tourService.getTourStats();
+      const stats = await this.tourService.getTourStats();
       res.status(200).json({
         status: 'success',
         data: {
-          tours,
+          stats,
+        },
+      });
+    } catch (err) {
+      res.status(404).json({
+        status: 'fail',
+        message: err,
+      });
+    }
+  }
+
+  public async getMonthlyPlan(req: Request, res: Response, next: NextFunction) {
+    try {
+      const year = parseInt(req.params.year);
+      const plan = await this.tourService.getMonthlyPlan(year);
+      res.status(200).json({
+        status: 'success',
+        data: {
+          plan,
         },
       });
     } catch (err) {

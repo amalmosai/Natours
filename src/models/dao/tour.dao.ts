@@ -109,4 +109,26 @@ export class TourService {
     }));
     return formattedStats;
   }
+
+  public async getMonthlyPlan(year: number): Promise<any> {
+    const plan = await prisma.$queryRaw`
+        SELECT 
+          EXTRACT(MONTH FROM date)::integer AS month,
+          COUNT(*)::integer AS "numTourStarts",
+          ARRAY_AGG(name) AS tours
+        FROM 
+          "Tour",
+          UNNEST("startDates") AS date
+        WHERE 
+          date >= ${new Date(`${year}-01-01`)} 
+          AND date <= ${new Date(`${year}-12-31`)}
+        GROUP BY 
+          EXTRACT(MONTH FROM date)
+        ORDER BY 
+          COUNT(*) DESC
+        LIMIT 12
+      `;
+
+    return plan;
+  }
 }
