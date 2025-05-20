@@ -122,6 +122,7 @@ export class TourService {
         WHERE 
           date >= ${new Date(`${year}-01-01`)} 
           AND date <= ${new Date(`${year}-12-31`)}
+          AND "secretTour" = false
         GROUP BY 
           EXTRACT(MONTH FROM date)
         ORDER BY 
