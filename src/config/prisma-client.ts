@@ -25,6 +25,11 @@ const prisma = new PrismaClient().$extends({
         const result = await query(args);
         return result?.secretTour ? null : result;
       },
+
+      async groupBy({ args, query }) {
+        args.where = { ...args.where, secretTour: { not: true } };
+        return query(args);
+      },
     },
   },
 });
