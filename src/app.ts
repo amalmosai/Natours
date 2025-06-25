@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import tourRouter from './routes/tour.route';
 import userRouter from './routes/user.route';
 import path from 'path';
+import { createCustomError } from './utils/apiError';
 const app = express();
 
 //1_global middlewares
@@ -27,10 +28,10 @@ app.all('*', (req, res, next) => {
   //   status: 'fail',
   //   message: `Can't find ${req.originalUrl} on this server!`,
   // });
-  const err: any = new Error(`Can't find ${req.originalUrl} on this server!`);
+  const err: any = new Error();
   err.status = 'fail';
   err.statusCode = 404;
-  next(err);
+  next(createCustomError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
