@@ -5,6 +5,8 @@ import {
   createTourSchema,
   updateTourSchema,
 } from '../validations/tour.validations';
+import { asyncWrapper } from '../utils/asynHandler';
+import { createCustomError } from '../utils/apiError';
 
 export class TourController {
   // private tourService: TourService;
@@ -20,149 +22,116 @@ export class TourController {
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    */
-  public async createTour(req: Request, res: Response): Promise<void> {
-    try {
-      // Validate request body
-      const { error } = createTourSchema.validate(req.body);
-      if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        return;
-      }
+  public createTour = asyncWrapper(async (req: Request, res: Response) => {
+    const { error } = createTourSchema.validate(req.body);
+    if (error) throw createCustomError(error.details[0].message, 400);
 
-      // Create tour
-      const createTourDto = new CreateTourDto(req.body);
-      const newTour = await this.tourService.createTour(createTourDto);
-      res.status(201).json(newTour);
-    } catch (err: any) {
-      res
-        .status(500)
-        .json({ message: 'Error creating tour', error: err.message });
-    }
-  }
-
+    const createTourDto = new CreateTourDto(req.body);
+    const newTour = await this.tourService.createTour(createTourDto);
+    res.status(201).json(newTour);
+  });
   /**
    * Updates an existing tour by ID.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    */
-  public async updateTourById(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
-
-    try {
-      // Validate request body
+  public updateTourById = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
       const { error } = updateTourSchema.validate(req.body);
-      if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        return;
-      }
+      if (error) throw createCustomError(error.details[0].message, 400);
 
-      // Update tour
       const updateTourDto = new UpdateTourDto(req.body);
       const updatedTour = await this.tourService.updateTourById(
         id,
         updateTourDto,
       );
+
+      if (!updatedTour) {
+        return next(createCustomError('No tour found with that ID', 404));
+      }
       res.status(200).json(updatedTour);
-    } catch (err: any) {
-      res
-        .status(500)
-        .json({ message: 'Error updating tour', error: err.message });
-    }
-  }
+    },
+  );
 
   /**
    * Retrieves a tour by ID.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    */
-  public async getTourById(req: Request, res: Response): Promise<void> {
-    const { id } = req.params;
-
-    try {
+  public getTourById = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
       const tour = await this.tourService.getTourById(id);
       if (!tour) {
-        res.status(404).json({ message: 'Tour not found' });
-        return;
+        return next(createCustomError('No tour found with that ID', 404));
       }
       res.status(200).json(tour);
-    } catch (err: any) {
-      res
-        .status(500)
-        .json({ message: 'Error retrieving tour', error: err.message });
-    }
-  }
+    },
+  );
 
   /**
    * Retrieves all tours.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    */
-  public async getAllTours(req: Request, res: Response) {
-    try {
-      const tours = await this.tourService.getAllTours(req.query);
-      res.status(200).json(tours);
-    } catch (err: any) {
-      res.status(404).json({ message: err.message, status: 'fail' });
-    }
-  }
+  public getAllTours = asyncWrapper(async (req: Request, res: Response) => {
+    const tours = await this.tourService.getAllTours(req.query);
+    res.status(200).json(tours);
+  });
 
   /**
    * Deletes a tour by ID.
    * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    */
-  public async deleteTourById(req: Request, res: Response) {
-    const { id } = req.params;
-
-    try {
+  public deleteTourById = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
       const deletedTour = await this.tourService.deleteTourById(id);
-      res.status(200).json(deletedTour);
-    } catch (err: any) {
-      res
-        .status(500)
-        .json({ message: 'Error deleting tour', error: err.message });
-    }
-  }
+      if (!deletedTour) {
+        return next(createCustomError('No tour found with that ID', 404));
+      }
 
-  public async aliasTopTours(req: Request, res: Response, next: NextFunction) {
+      res.status(200).json(deletedTour);
+    },
+  );
+
+  /**
+   * Middleware that modifies the query parameters to fetch top-rated tours.
+   * - Limits results to 5 tours
+   * - Sorts by ratings (descending) and price (ascending)
+   * - Selects only specific fields for efficiency
+   * @param {Request} req - Express request object (query params will be modified)
+   * @param {Response} res - Express response object (not used here)
+   * @param {NextFunction} next - Express next function to pass control to next middleware
+   */
+  public aliasTopTours = (req: Request, res: Response, next: NextFunction) => {
     req.query.limit = '5';
     req.query.sort = 'ratingsAverage:desc,price:asc';
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
     next();
-  }
+  };
 
-  public async getTourStats(req: Request, res: Response, next: NextFunction) {
-    try {
-      const stats = await this.tourService.getTourStats();
-      res.status(200).json({
-        status: 'success',
-        data: {
-          stats,
-        },
-      });
-    } catch (err) {
-      res.status(404).json({
-        status: 'fail',
-        message: err,
-      });
-    }
-  }
+  /**
+   * Fetches aggregated tour statistics (average ratings, difficulty stats, etc.)
+   * @async
+   * @returns {Promise<void>}
+   */
+  public getTourStats = asyncWrapper(async (req: Request, res: Response) => {
+    const stats = await this.tourService.getTourStats();
+    res.status(200).json({ status: 'success', data: { stats } });
+  });
 
-  public async getMonthlyPlan(req: Request, res: Response, next: NextFunction) {
-    try {
-      const year = parseInt(req.params.year);
-      const plan = await this.tourService.getMonthlyPlan(year);
-      res.status(200).json({
-        status: 'success',
-        data: {
-          plan,
-        },
-      });
-    } catch (err) {
-      res.status(404).json({
-        status: 'fail',
-        message: err,
-      });
-    }
-  }
+  /**
+   * Gets monthly tour plan for a specific year (tours grouped by month)
+   * @async
+   * @param {number} year - Target year from URL params (/:year)
+   * @returns {Promise<void>}
+   */
+  public getMonthlyPlan = asyncWrapper(async (req: Request, res: Response) => {
+    const year = parseInt(req.params.year);
+    const plan = await this.tourService.getMonthlyPlan(year);
+    res.status(200).json({ status: 'success', data: { plan } });
+  });
 }
