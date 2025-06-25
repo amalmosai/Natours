@@ -12,10 +12,6 @@ if (process.env.NODE_ENV === 'devlopment') {
 
 app.use(express.json()); //modify in coming request cause it undefined without this
 app.use(express.static(path.join(__dirname, '../public')));
-app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`Hello from middleware`);
-  next();
-});
 
 app.use((req: any, res: Response, next: NextFunction) => {
   req.requestTime = new Date().toISOString();
@@ -25,4 +21,24 @@ app.use((req: any, res: Response, next: NextFunction) => {
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
+//handle all http requests (get | post | put  | patch | delete) which not found
+app.all('*', (req, res, next) => {
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `Can't find ${req.originalUrl} on this server!`,
+  // });
+  const err: any = new Error(`Can't find ${req.originalUrl} on this server!`);
+  err.status = 'fail';
+  err.statusCode = 404;
+  next(err);
+});
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'errror';
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
+});
 export default app;
