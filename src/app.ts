@@ -8,7 +8,7 @@ import { errorHandler } from './middlewares/errorHandler';
 const app = express();
 
 //1_global middlewares
-if (process.env.NODE_ENV === 'devlopment') {
+if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); //logger
 }
 
