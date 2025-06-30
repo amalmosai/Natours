@@ -47,7 +47,7 @@ export class AuthService {
       );
     }
 
-    const token = generateToken({ id: user.id, role: user.role });
+    const token = await generateToken({ id: user.id, role: user.role });
 
     return { token, user };
   }

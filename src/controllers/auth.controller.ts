@@ -48,7 +48,7 @@ export class AuthController {
 
       const loginDto = new LoginDto(req.body);
       const { token, user } = await this.authService.login(loginDto);
-      console.log(token);
+
       res.status(200).json({
         status: 'success',
         token,
