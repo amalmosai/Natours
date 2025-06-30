@@ -1,7 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Response, NextFunction } from 'express';
 import morgan from 'morgan';
-import tourRouter from './routes/tour.route';
-import userRouter from './routes/user.route';
 import path from 'path';
 import { createCustomError } from './utils/apiError';
 import { errorHandler } from './middlewares/errorHandler';
@@ -20,8 +18,13 @@ app.use((req: any, res: Response, next: NextFunction) => {
   next();
 });
 
+import tourRouter from './routes/tour.route';
+import userRouter from './routes/user.route';
+import authRouter from './routes/auth.route';
+
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/auth', authRouter);
 
 //handle all http requests (get | post | put  | patch | delete) which not found
 app.all('*', (req, res, next) => {
