@@ -4,16 +4,14 @@ export interface IUser {
   id?: string;
   name: string;
   email: string;
-  photo?: string;
+  photo?: string | null;
   role?: Role;
   password: string;
-  passwordConfirm: string;
+  passwordConfirm: string | null | undefined;
   passwordChangedAt?: Date | null;
   passwordResetToken?: string | null;
   passwordResetExpires?: Date | null;
   active?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export interface ILogin {

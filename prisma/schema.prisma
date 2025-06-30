@@ -27,7 +27,7 @@ model User {
   photo                 String?
   role                  Role          @default(USER)
   password              String
-  passwordConfirm       String
+  passwordConfirm       String?
   active                Boolean       @default(true)
 
   passwordChangedAt     DateTime?
