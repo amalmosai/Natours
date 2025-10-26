@@ -81,4 +81,18 @@ export class UserService {
       },
     });
   }
+
+  /**
+   * Check if user changed password after JWT was issued
+   */
+  static changedPasswordAfter(user: any, JWTTimestamp: number): boolean {
+    if (user.passwordChangedAt) {
+      const changedTimestamp = Math.floor(
+        user.passwordChangedAt.getTime() / 1000,
+      );
+      return JWTTimestamp < changedTimestamp;
+    }
+
+    return false;
+  }
 }

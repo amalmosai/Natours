@@ -4,6 +4,7 @@ import { createCustomError, HttpCode } from '../utils/apiError';
 import { promisify } from 'util';
 import { UserService } from '../models/dao/user.dao';
 import { asyncWrapper } from '../utils/asynHandler';
+import { JwtPayload } from '../interfaces/jwt.interface';
 
 declare global {
   namespace Express {
@@ -33,10 +34,10 @@ export const authenticateUser = asyncWrapper(
       );
     }
 
-    const decoded = await promisify<string, Secret>(Jwt.verify)(
+    const decoded = Jwt.verify(
       token,
       process.env.JWT_SECRET as Secret,
-    );
+    ) as JwtPayload;
 
     req.user = decoded;
     const currentUser = await UserService.getUserById(req.user.id);
@@ -45,6 +46,15 @@ export const authenticateUser = asyncWrapper(
       return next(
         createCustomError(
           'The user belonging to this token does no longer exist.',
+          HttpCode.UNAUTHORIZED,
+        ),
+      );
+    }
+
+    if (UserService.changedPasswordAfter(currentUser, decoded.iat)) {
+      return next(
+        createCustomError(
+          'User recently changed password! Please log in again.',
           HttpCode.UNAUTHORIZED,
         ),
       );
