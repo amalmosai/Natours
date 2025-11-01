@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../models/dao/auth.dao';
-import { UserService } from '../models/dao/user.dao';
 import { loginSchema, createUserSchema } from '../validations/user.validation';
 import { asyncWrapper } from '../utils/asynHandler';
 import { createCustomError, HttpCode } from '../utils/apiError';

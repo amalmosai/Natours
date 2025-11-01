@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Jwt, { Secret } from 'jsonwebtoken';
 import { createCustomError, HttpCode } from '../utils/apiError';
-import { promisify } from 'util';
 import { UserService } from '../models/dao/user.dao';
 import { asyncWrapper } from '../utils/asynHandler';
 import { JwtPayload } from '../interfaces/jwt.interface';
