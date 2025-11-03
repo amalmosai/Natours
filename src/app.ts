@@ -52,6 +52,8 @@ app.use(
 app.use(express.json({ limit: '10kb' })); //modify incoming request cause it undefined without this
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+
 app.use((req: any, res: Response, next: NextFunction) => {
   req.requestTime = new Date().toISOString();
   next();
