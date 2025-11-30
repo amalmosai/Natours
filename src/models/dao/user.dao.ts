@@ -84,15 +84,15 @@ export class UserService {
 
   /**
    * Check if user changed password after JWT was issued
+   *  to test it make passwordChangedAt at future date
    */
   static changedPasswordAfter(user: any, JWTTimestamp: number): boolean {
-    if (user.passwordChangedAt) {
-      const changedTimestamp = Math.floor(
-        user.passwordChangedAt.getTime() / 1000,
-      );
-      return JWTTimestamp < changedTimestamp;
-    }
+    if (!user.passwordChangedAt) return false;
 
-    return false;
+    const changedTimestamp = Math.floor(
+      new Date(user.passwordChangedAt).getTime() / 1000,
+    );
+
+    return JWTTimestamp < changedTimestamp;
   }
 }
