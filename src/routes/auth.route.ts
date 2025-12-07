@@ -17,6 +17,6 @@ router
 
 router
   .route('/reset-password/:token')
-  .post(authController.resetPassword.bind(authController));
+  .patch(authController.resetPassword.bind(authController));
 
 export default router;
