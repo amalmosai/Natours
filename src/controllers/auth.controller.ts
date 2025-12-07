@@ -11,10 +11,7 @@ export class AuthController {
    * @param authService
    * Dependency injection
    */
-  public constructor(
-    private readonly authService: AuthService,
-    // private readonly userService: UserService,
-  ) {}
+  public constructor(private readonly authService: AuthService) {}
 
   /**
    * Handles user registration
@@ -53,6 +50,60 @@ export class AuthController {
         token,
         data: { user },
         message: 'User login successfully',
+      });
+    },
+  );
+
+  /**
+   * Handles forgot password - sends reset token to email
+   */
+  public forgotPassword = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { email } = req.body;
+
+      if (!email) {
+        throw createCustomError(
+          'Please provide an email address',
+          HttpCode.BAD_REQUEST,
+        );
+      }
+
+      const resetToken = await this.authService.forgotPassword(email);
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Password reset token sent to email',
+        resetToken:
+          process.env.NODE_ENV === 'development' ? resetToken : undefined,
+      });
+    },
+  );
+
+  /**
+   * Handles password reset with token
+   */
+  public resetPassword = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { token } = req.params;
+      const { password, passwordConfirm } = req.body;
+
+      if (!password || !passwordConfirm) {
+        throw createCustomError(
+          'Please provide password and password confirmation',
+          HttpCode.BAD_REQUEST,
+        );
+      }
+
+      if (password !== passwordConfirm) {
+        throw createCustomError('Passwords do not match', HttpCode.BAD_REQUEST);
+      }
+
+      const user = await this.authService.resetPassword(token, password);
+
+      res.status(200).json({
+        status: 'success',
+        data: { user },
+        message: 'Password reset successfully',
       });
     },
   );

@@ -5,6 +5,8 @@ import prisma from '../../config/prisma-client';
 import { createCustomError, HttpCode } from '../../utils/apiError';
 import { comparePasswords, hashPassword } from '../../utils/password';
 import { generateToken } from '../../utils/generateToken';
+import crypto from 'crypto';
+import { sendPasswordResetEmail } from '../../services/email.service';
 
 export class AuthService {
   /**
@@ -50,5 +52,99 @@ export class AuthService {
     const token = await generateToken({ id: user.id, role: user.role });
 
     return { token, user };
+  }
+
+  /**
+   * Forgot password - generates reset token and sends email
+   */
+  public async forgotPassword(email: string): Promise<string> {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw createCustomError(
+        'No user found with that email address',
+        HttpCode.NOT_FOUND,
+      );
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    const resetTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: resetTokenExpires,
+      },
+    });
+
+    const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    try {
+      await sendPasswordResetEmail(user.email, resetURL);
+    } catch (err) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResetToken: null,
+          passwordResetExpires: null,
+        },
+      });
+
+      throw createCustomError(
+        'There was an error sending the email. Try again later.',
+        HttpCode.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return resetToken;
+  }
+
+  /**
+   * Reset password using token
+   */
+  public async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<IUser> {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      throw createCustomError(
+        'Token is invalid or has expired',
+        HttpCode.BAD_REQUEST,
+      );
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    return updatedUser;
   }
 }

@@ -11,4 +11,12 @@ router.route('/signUp').post(authController.signup.bind(authController));
 
 router.route('/login').post(authController.login.bind(authController));
 
+router
+  .route('/forgot-password')
+  .post(authController.forgotPassword.bind(authController));
+
+router
+  .route('/reset-password/:token')
+  .post(authController.resetPassword.bind(authController));
+
 export default router;
