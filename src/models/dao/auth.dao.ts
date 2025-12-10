@@ -112,10 +112,13 @@ export class AuthService {
    * Reset password using token
    */
   public async resetPassword(
-    token: string,
+    resetToken: string,
     newPassword: string,
-  ): Promise<IUser> {
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  ): Promise<{ token: any; user: IUser }> {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
 
     const user = await prisma.user.findFirst({
       where: {
@@ -145,6 +148,11 @@ export class AuthService {
       },
     });
 
-    return updatedUser;
+    const token = await generateToken({
+      id: updatedUser.id,
+      role: updatedUser.role,
+    });
+
+    return { token, user: updatedUser };
   }
 }

@@ -84,7 +84,7 @@ export class AuthController {
    */
   public resetPassword = asyncWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
-      const { token } = req.params;
+      const { resetToken } = req.params;
       const { password, passwordConfirm } = req.body;
 
       if (!password || !passwordConfirm) {
@@ -98,10 +98,14 @@ export class AuthController {
         throw createCustomError('Passwords do not match', HttpCode.BAD_REQUEST);
       }
 
-      const user = await this.authService.resetPassword(token, password);
+      const { token, user } = await this.authService.resetPassword(
+        resetToken,
+        password,
+      );
 
       res.status(200).json({
         status: 'success',
+        token,
         data: { user },
         message: 'Password reset successfully',
       });
