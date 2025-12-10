@@ -111,4 +111,37 @@ export class AuthController {
       });
     },
   );
+
+  /**
+   * * Handles password update for logged-in users
+   */
+  public updatePassword = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.user.id;
+      const { currentPassword, newPassword, newPasswordConfirm } = req.body;
+      if (!currentPassword || !newPassword || !newPasswordConfirm) {
+        throw createCustomError(
+          'Please provide current password, new password and password confirmation',
+          HttpCode.BAD_REQUEST,
+        );
+      }
+      if (newPassword !== newPasswordConfirm) {
+        throw createCustomError(
+          'New passwords do not match',
+          HttpCode.BAD_REQUEST,
+        );
+      }
+      const { token, user } = await this.authService.updatePassword(
+        userId,
+        currentPassword,
+        newPassword,
+      );
+      res.status(200).json({
+        status: 'success',
+        token,
+        data: { user },
+        message: 'Password updated successfully',
+      });
+    },
+  );
 }

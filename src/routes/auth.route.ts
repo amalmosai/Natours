@@ -1,6 +1,7 @@
 import express from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { AuthService } from '../models/dao/auth.dao';
+import { authenticateUser } from '../middlewares/auth';
 
 const router = express.Router();
 
@@ -18,5 +19,9 @@ router
 router
   .route('/reset-password/:token')
   .patch(authController.resetPassword.bind(authController));
+
+router
+  .route('/update-password')
+  .patch(authenticateUser, authController.updatePassword.bind(authController));
 
 export default router;

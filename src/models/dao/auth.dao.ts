@@ -155,4 +155,45 @@ export class AuthService {
 
     return { token, user: updatedUser };
   }
+
+  /**
+   * * Update password for logged-in user
+   */
+  public async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ token: any; user: IUser }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw createCustomError('User not found', HttpCode.NOT_FOUND);
+    }
+
+    if (!(await comparePasswords(currentPassword, user.password))) {
+      throw createCustomError(
+        'Current password is incorrect',
+        HttpCode.UNAUTHORIZED,
+      );
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    const token = await generateToken({
+      id: updatedUser.id,
+      role: updatedUser.role,
+    });
+
+    return { token, user: updatedUser };
+  }
 }
