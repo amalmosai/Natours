@@ -166,6 +166,7 @@ export class AuthService {
   ): Promise<{ token: any; user: IUser }> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: { password: true, id: true, role: true },
     });
 
     if (!user) {
