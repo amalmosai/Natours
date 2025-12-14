@@ -25,7 +25,7 @@ export class AuthController {
     const signupDto = new CreateUserDto(req.body);
     const user = await this.authService.signUp(signupDto);
 
-    res.status(201).json({
+    res.status(HttpCode.CREATED).json({
       status: 'success',
       data: { user },
       message: 'User register successfully',
@@ -45,7 +45,7 @@ export class AuthController {
       const loginDto = new LoginDto(req.body);
       const { token, user } = await this.authService.login(loginDto);
 
-      res.status(200).json({
+      res.status(HttpCode.OK).json({
         status: 'success',
         token,
         data: { user },
@@ -70,7 +70,7 @@ export class AuthController {
 
       const resetToken = await this.authService.forgotPassword(email);
 
-      res.status(200).json({
+      res.status(HttpCode.OK).json({
         status: 'success',
         message: 'Password reset token sent to email',
         resetToken:
@@ -103,7 +103,7 @@ export class AuthController {
         password,
       );
 
-      res.status(200).json({
+      res.status(HttpCode.OK).json({
         status: 'success',
         token,
         data: { user },
@@ -136,7 +136,7 @@ export class AuthController {
         currentPassword,
         newPassword,
       );
-      res.status(200).json({
+      res.status(HttpCode.OK).json({
         status: 'success',
         token,
         data: { user },
