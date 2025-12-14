@@ -1,9 +1,15 @@
 import express from 'express';
-import * as userController from "../controllers/user.controller";
+import { UserController }from "../controllers/user.controller";
+import { UserService } from '../models/dao/user.dao';
+import { authenticateUser } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.route('/').get(userController.getAllUsers).post(userController.createUser);
-router.route('/:id').get(userController.getUser).patch(userController.updateUser).delete(userController.deleteUser);
+const userService = new UserService();
+const userController = new UserController(userService);
+
+router.route('/updateMe').patch(authenticateUser, userController.updateMe.bind(userController));
+
+router.route('/deleteMe').delete(authenticateUser, userController.deleteMe.bind(userController));
 
 export default router;

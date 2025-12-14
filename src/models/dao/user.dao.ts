@@ -22,7 +22,7 @@ export class UserService {
   /**
    * Update user
    */
-  public static async updateUser(
+  public async updateUser(
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<IUser> {
@@ -42,7 +42,7 @@ export class UserService {
   /**
    * Delete user (soft delete)
    */
-  public static async deleteUser(id: string): Promise<IUser> {
+  public async deleteUser(id: string): Promise<IUser> {
     return await prisma.user.update({
       where: { id },
       data: { active: false },
