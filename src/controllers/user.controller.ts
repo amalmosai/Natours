@@ -1,36 +1,43 @@
-import express, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { UserService } from '../models/dao/user.dao';
+import { asyncWrapper } from '../utils/asynHandler';
+import { createCustomError, HttpCode } from '../utils/apiError';
+import { updateUserSchema } from '../validations/user.validation'
 
-export const getAllUsers = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not defined yet',
-  });
-};
+export class UserController{
+   /**
+   *
+   * @param userService
+   * Dependency injection
+   */
+  public constructor(private readonly userService: UserService){}
 
-export const getUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not defined yet',
-  });
-};
+  public updateMe = asyncWrapper(async (req: Request, res: Response) => {
+    const { error } = updateUserSchema.validate(req.body);
+    if (error) {
+      throw createCustomError(error.details[0].message, HttpCode.BAD_REQUEST);
+    }
 
-export const createUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not defined yet',
-  });
-};
 
-export const deleteUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not defined yet',
+    res.status(HttpCode.OK).json({
+    status: 'success',
+    // data: {
+    //   user: updatedUser
+    // },
+    message: 'Profile updated successfully'
   });
-};
+  })
 
-export const updateUser = (req: Request, res: Response) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'this route is not defined yet',
-  });
-};
+  public deleteMe = asyncWrapper(async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    await this.userService.deleteUser(userId);
+
+
+    res.status(HttpCode.OK).json({
+        status: 'success',
+        data: null,
+        message: 'Your account has been deleted successfully',
+      });
+  })
+
+}
