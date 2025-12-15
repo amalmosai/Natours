@@ -103,10 +103,16 @@ const createUserSchema = Joi.object({
  */
 const updateUserSchema = Joi.object({
   name: nameValidation.optional(),
-  email: emailValidation.optional(),
   photo: photoValidation.optional(),
-  role: roleValidation.optional(),
-  active: activeValidation.optional(),
+  email: emailValidation.optional(),
+  password: Joi.forbidden().messages({
+    'any.unknown':
+      'Password cannot be updated here. Please use the password reset feature.',
+    'any.forbidden':
+      'Password cannot be updated here. Please use the password reset feature.',
+  }),
+  role: Joi.forbidden(),
+  active: Joi.forbidden(),
 }).min(1);
 
 /**
