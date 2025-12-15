@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../models/dao/auth.dao';
-import { loginSchema, createUserSchema } from '../validations/user.validation';
+import {
+  loginSchema,
+  createUserSchema,
+  changePasswordSchema,
+  resetPasswordSchema,
+} from '../validations/user.validation';
 import { asyncWrapper } from '../utils/asynHandler';
 import { createCustomError, HttpCode } from '../utils/apiError';
 import { LoginDto, CreateUserDto } from '../models/dto/user.dto';
@@ -85,17 +90,11 @@ export class AuthController {
   public resetPassword = asyncWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
       const { resetToken } = req.params;
-      const { password, passwordConfirm } = req.body;
+      const { password } = req.body;
+      const { error } = resetPasswordSchema.validate(req.body);
 
-      if (!password || !passwordConfirm) {
-        throw createCustomError(
-          'Please provide password and password confirmation',
-          HttpCode.BAD_REQUEST,
-        );
-      }
-
-      if (password !== passwordConfirm) {
-        throw createCustomError('Passwords do not match', HttpCode.BAD_REQUEST);
+      if (error) {
+        throw createCustomError(error.details[0].message, HttpCode.BAD_REQUEST);
       }
 
       const { token, user } = await this.authService.resetPassword(
@@ -118,19 +117,14 @@ export class AuthController {
   public updatePassword = asyncWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.user.id;
-      const { currentPassword, newPassword, newPasswordConfirm } = req.body;
-      if (!currentPassword || !newPassword || !newPasswordConfirm) {
-        throw createCustomError(
-          'Please provide current password, new password and password confirmation',
-          HttpCode.BAD_REQUEST,
-        );
+      const { currentPassword, newPassword } = req.body;
+
+      const { error } = changePasswordSchema.validate(req.body);
+
+      if (error) {
+        throw createCustomError(error.details[0].message, HttpCode.BAD_REQUEST);
       }
-      if (newPassword !== newPasswordConfirm) {
-        throw createCustomError(
-          'New passwords do not match',
-          HttpCode.BAD_REQUEST,
-        );
-      }
+
       const { token, user } = await this.authService.updatePassword(
         userId,
         currentPassword,

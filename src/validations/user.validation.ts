@@ -129,7 +129,7 @@ const changePasswordSchema = Joi.object({
     'any.required': 'Please provide your current password',
   }),
   newPassword: passwordValidation,
-  passwordConfirm: passwordConfirmValidation,
+  newpasswordConfirm: passwordConfirmValidation,
 });
 
 /**
@@ -143,10 +143,6 @@ const forgotPasswordSchema = Joi.object({
  *  Reset Password Schema
  */
 const resetPasswordSchema = Joi.object({
-  token: Joi.string().required().messages({
-    'string.empty': 'Token is required',
-    'any.required': 'Token is required',
-  }),
   newPassword: passwordValidation,
   passwordConfirm: passwordConfirmValidation,
 });
