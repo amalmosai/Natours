@@ -37,7 +37,7 @@ export class UserController {
     const userId = req.user.id;
     await this.userService.deleteUser(userId);
 
-    res.status(HttpCode.OK).json({
+    res.status(HttpCode.NO_CONTENT).json({
       status: 'success',
       data: null,
       message: 'Your account has been deleted successfully',

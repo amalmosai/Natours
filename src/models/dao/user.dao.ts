@@ -9,7 +9,7 @@ export class UserService {
    * Get all users
    */
   public static async getAllUsers(): Promise<IUser[]> {
-    return await prisma.user.findMany();
+    return await prisma.user.findMany({ where: { active: true } });
   }
 
   /**
