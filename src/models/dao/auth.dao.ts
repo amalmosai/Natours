@@ -30,7 +30,7 @@ export class AuthService {
   /**
    * Login user
    */
-  public async login(loginDto: LoginDto): Promise<{ token: any; user: IUser }> {
+  public async login(loginDto: LoginDto): Promise<{ user: IUser }> {
     const user = await prisma.user.findUnique({
       where: { email: loginDto.email },
     });
@@ -49,9 +49,7 @@ export class AuthService {
       );
     }
 
-    const token = await generateToken({ id: user.id, role: user.role });
-
-    return { token, user };
+    return { user };
   }
 
   /**
@@ -114,7 +112,7 @@ export class AuthService {
   public async resetPassword(
     resetToken: string,
     newPassword: string,
-  ): Promise<{ token: any; user: IUser }> {
+  ): Promise<{ user: IUser }> {
     const hashedToken = crypto
       .createHash('sha256')
       .update(resetToken)
@@ -148,12 +146,7 @@ export class AuthService {
       },
     });
 
-    const token = await generateToken({
-      id: updatedUser.id,
-      role: updatedUser.role,
-    });
-
-    return { token, user: updatedUser };
+    return { user: updatedUser };
   }
 
   /**
@@ -163,7 +156,7 @@ export class AuthService {
     userId: string,
     currentPassword: string,
     newPassword: string,
-  ): Promise<{ token: any; user: IUser }> {
+  ): Promise<{ user: IUser }> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { password: true, id: true, role: true },
@@ -190,11 +183,6 @@ export class AuthService {
       },
     });
 
-    const token = await generateToken({
-      id: updatedUser.id,
-      role: updatedUser.role,
-    });
-
-    return { token, user: updatedUser };
+    return { user: updatedUser };
   }
 }

@@ -9,6 +9,9 @@ import {
 import { asyncWrapper } from '../utils/asynHandler';
 import { createCustomError, HttpCode } from '../utils/apiError';
 import { LoginDto, CreateUserDto } from '../models/dto/user.dto';
+import { CookieOptions } from 'express';
+import { generateToken } from '../utils/generateToken';
+import { IUser } from '../interfaces/user.interface';
 
 export class AuthController {
   /**
@@ -29,9 +32,18 @@ export class AuthController {
 
     const signupDto = new CreateUserDto(req.body);
     const user = await this.authService.signUp(signupDto);
+    if (!user) {
+      throw createCustomError(
+        'User registration failed',
+        HttpCode.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const token = await this.sendCookieToken(user, res);
 
     res.status(HttpCode.CREATED).json({
       status: 'success',
+      token,
       data: { user },
       message: 'User register successfully',
     });
@@ -48,7 +60,8 @@ export class AuthController {
       }
 
       const loginDto = new LoginDto(req.body);
-      const { token, user } = await this.authService.login(loginDto);
+      const { user } = await this.authService.login(loginDto);
+      const token = await this.sendCookieToken(user, res);
 
       res.status(HttpCode.OK).json({
         status: 'success',
@@ -97,10 +110,12 @@ export class AuthController {
         throw createCustomError(error.details[0].message, HttpCode.BAD_REQUEST);
       }
 
-      const { token, user } = await this.authService.resetPassword(
+      const { user } = await this.authService.resetPassword(
         resetToken,
         password,
       );
+
+      const token = await this.sendCookieToken(user, res);
 
       res.status(HttpCode.OK).json({
         status: 'success',
@@ -125,11 +140,14 @@ export class AuthController {
         throw createCustomError(error.details[0].message, HttpCode.BAD_REQUEST);
       }
 
-      const { token, user } = await this.authService.updatePassword(
+      const { user } = await this.authService.updatePassword(
         userId,
         currentPassword,
         newPassword,
       );
+
+      const token = await this.sendCookieToken(user, res);
+
       res.status(HttpCode.OK).json({
         status: 'success',
         token,
@@ -138,4 +156,28 @@ export class AuthController {
       });
     },
   );
+
+  /**
+   * Sends a cookie token to the client
+   * @param user
+   * @param res
+   * @returns
+   */
+  private async sendCookieToken(user: IUser, res: Response): Promise<any> {
+    const token = await generateToken({ id: user.id, role: user.role });
+
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    };
+    const expiresInDays = parseInt(process.env.JWT_COOKIE_EXPIRES_IN || '7');
+    cookieOptions.maxAge = expiresInDays * 24 * 60 * 60 * 1000;
+
+    res.cookie('authToken', token, cookieOptions);
+    return token;
+  }
 }
