@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { UserService } from '../models/dao/user.dao';
 import { asyncWrapper } from '../utils/asynHandler';
 import { createCustomError, HttpCode } from '../utils/apiError';
@@ -43,4 +43,20 @@ export class UserController {
       message: 'Your account has been deleted successfully',
     });
   });
+
+  public getUserById = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      const user = await this.userService.getUserById(id);
+      res.status(200).json(user);
+    },
+  );
+
+  public getMe = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      const user = await this.userService.getUserById(id);
+      res.status(200).json(user);
+    },
+  );
 }

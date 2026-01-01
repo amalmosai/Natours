@@ -15,8 +15,11 @@ export class UserService {
   /**
    * Get user by ID
    */
-  public static async getUserById(id: string): Promise<IUser | null> {
-    return await prisma.user.findUnique({ where: { id } });
+  public async getUserById(id: string): Promise<IUser | null> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user)
+      throw createCustomError('No user found with that ID', HttpCode.NOT_FOUND);
+    return user;
   }
 
   /**
@@ -47,15 +50,6 @@ export class UserService {
       where: { id },
       data: { active: false },
     });
-  }
-
-  /**
-   * Get current user profile
-   */
-  public static async getMe(userId: string): Promise<IUser> {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw createCustomError('User not found', HttpCode.NOT_FOUND);
-    return user;
   }
 
   /**

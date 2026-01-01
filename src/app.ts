@@ -39,6 +39,7 @@ app.use('/api', limiter);
 app.use(
   hpp({
     whitelist: [
+      //allow duplicate para's names for these fields
       'duration',
       'ratingsQuantity',
       'ratingsAverage',
